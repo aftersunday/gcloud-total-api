@@ -15,8 +15,8 @@ public class TestBigQuery {
 		try {
 			// BQBasicFunction.createDataset();
 			Foo f = new Foo();
-			f.setName("Foo 01");
-			f.setDescription("This is Foo 01");
+			f.setName("Foo 02");
+			f.setDescription("This is Foo 02");
 //			BQBasicFunction.createTable(f, f.getClass().getSimpleName());
 			BQBasicFunction.insert(f);
 		} catch (Exception e) {
