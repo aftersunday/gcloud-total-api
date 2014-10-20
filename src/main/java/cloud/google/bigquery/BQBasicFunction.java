@@ -2,7 +2,9 @@ package cloud.google.bigquery;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.security.GeneralSecurityException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -25,6 +27,8 @@ import com.google.api.services.bigquery.model.Dataset;
 import com.google.api.services.bigquery.model.DatasetReference;
 import com.google.api.services.bigquery.model.Table;
 import com.google.api.services.bigquery.model.TableDataInsertAllRequest;
+import com.google.api.services.bigquery.model.TableDataInsertAllRequest.Rows;
+import com.google.api.services.bigquery.model.TableDataInsertAllResponse;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableReference;
 import com.google.api.services.bigquery.model.TableRow;
@@ -65,11 +69,11 @@ public class BQBasicFunction {
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void insert(Object obj) {
+	public static Rows convertObjectToTableRows(Object obj) {
+		TableDataInsertAllRequest.Rows rows = new TableDataInsertAllRequest.Rows();
 		TableRow row = new TableRow();
 		String objectId = "";
-		for (java.lang.reflect.Field f : obj.getClass().getDeclaredFields()) {
+		for (Field f : obj.getClass().getDeclaredFields()) {
 			f.setAccessible(true);
 			String fName = f.getName();
 			String fType = f.getType().getName();
@@ -106,13 +110,16 @@ public class BQBasicFunction {
 					fValue = 0;
 				}
 			} else if (Utility.isDateTimeField(fType)) {
+				SimpleDateFormat dateFormat = new SimpleDateFormat(
+						"YYYY-MM-dd HH:mm:ss.SSS");
 				try {
 					if (f.get(obj) != null) {
 						Date date = (Date) f.get(obj);
-						fValue = date.getTime();
+						fValue = dateFormat.format(date);
 					}
 				} catch (Exception e) {
-					fValue = Calendar.getInstance().getTime();
+					Date date = Calendar.getInstance().getTime();
+					fValue = dateFormat.format(date);
 				}
 			} else if (Utility.isBooleanField(fType)) {
 				try {
@@ -134,23 +141,28 @@ public class BQBasicFunction {
 			}
 			row.set(fName, fValue);
 		}
-		TableDataInsertAllRequest.Rows rows = new TableDataInsertAllRequest.Rows();
 		rows.setInsertId(objectId);
 		rows.setJson(row);
+		return rows;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void insert(Object obj) {
+		Rows rows = convertObjectToTableRows(obj);
 		List rowList = new ArrayList();
 		rowList.add(rows);
+
 		TableDataInsertAllRequest content = new TableDataInsertAllRequest()
 				.setRows(rowList);
 		try {
-			// TableDataInsertAllResponse response;
-			// response =
-			bigquery.tabledata()
+			TableDataInsertAllResponse response = bigquery
+					.tabledata()
 					.insertAll(PROJECT_ID, DATASET_ID,
 							obj.getClass().getSimpleName(), content).execute();
-			System.out.println("Insert bigquery success - " + objectId);
+			System.out.println(response.toPrettyString());
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("Insert bigquery fail - " + objectId);
+			System.out.println("Insert bigquery fail - " + rows.getInsertId());
 		}
 	}
 
