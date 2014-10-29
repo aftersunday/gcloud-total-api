@@ -43,7 +43,7 @@ public class BQCoreFunction {
 
 		// Jobconfiguration need JobConfigurationQuery
 		JobConfigurationQuery queryConfig = new JobConfigurationQuery();
-		queryConfig.setQuery(querySql);
+		queryConfig.setQuery(querySql);		
 
 		config.setQuery(queryConfig);
 

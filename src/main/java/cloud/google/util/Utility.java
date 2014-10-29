@@ -22,6 +22,7 @@ package cloud.google.util;
  */
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -29,7 +30,7 @@ import com.google.gson.Gson;
 public class Utility {
 
 	public static boolean isIntegerField(String typeName) {
-		if (typeName.equals("int")
+		if (typeName.equals("INTEGER") || typeName.equals("int")
 				|| typeName.equals("class java.lang.Integer")
 				|| typeName.equals("java.lang.Integer")) {
 			return true;
@@ -38,7 +39,8 @@ public class Utility {
 	}
 
 	public static boolean isStringField(String typeName) {
-		if (typeName.equals("class java.lang.String")
+		if (typeName.equals("STRING")
+				|| typeName.equals("class java.lang.String")
 				|| typeName.equals("java.lang.String")) {
 			return true;
 		}
@@ -46,7 +48,8 @@ public class Utility {
 	}
 
 	public static boolean isBooleanField(String typeName) {
-		if (typeName.equals("class java.lang.Boolean")
+		if (typeName.equals("BOOLEAN")
+				|| typeName.equals("class java.lang.Boolean")
 				|| typeName.equals("boolean")
 				|| typeName.equals("java.lang.Boolean")) {
 			return true;
@@ -55,7 +58,8 @@ public class Utility {
 	}
 
 	public static boolean isDateTimeField(String typeName) {
-		if (typeName.equals("class java.util.Date")
+		if (typeName.equals("TIMESTAMP")
+				|| typeName.equals("class java.util.Date")
 				|| typeName.equals("java.util.Date")) {
 			return true;
 		}
@@ -63,7 +67,8 @@ public class Utility {
 	}
 
 	public static boolean isDoubleField(String typeName) {
-		if (typeName.equals("class java.lang.Double")
+		if (typeName.equals("DOUBLE")
+				|| typeName.equals("class java.lang.Double")
 				|| typeName.equals("double")
 				|| typeName.equals("java.lang.Double")) {
 			return true;
@@ -71,8 +76,15 @@ public class Utility {
 		return false;
 	}
 
+	public static boolean isFloatField(String typeName) {
+		if (typeName.equals("FLOAT")) {
+			return true;
+		}
+		return false;
+	}
+
 	public static boolean isLongField(String typeName) {
-		if (typeName.equals("class java.lang.Long")
+		if (typeName.equals("LONG") || typeName.equals("class java.lang.Long")
 				|| typeName.equals("java.lang.Long") || typeName.equals("long")) {
 			return true;
 		}
@@ -123,5 +135,17 @@ public class Utility {
 			}
 		}
 		return result;
+	}
+
+	public static void main(String[] args) {
+		String ts = "1.414399417544E9";
+		double d1 = Double.parseDouble(ts);
+		System.out.println(d1);
+		long l1 = (long) d1 * 1000;
+
+		System.out.println(l1);
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(l1);
+		System.out.println(cal.getTime());
 	}
 }

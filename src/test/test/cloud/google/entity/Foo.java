@@ -20,11 +20,11 @@ public class Foo {
 	@BigQuery_Id
 	private String id;
 	private String name;
+	@BigQuery_Remove
 	private String description;
 	private int age;
 	private boolean gender;
 	private ArrayList<String> interest;
-	@BigQuery_Remove
 	private String history;
 	private Date dob;
 
@@ -36,7 +36,10 @@ public class Foo {
 		this.age = 1;
 		this.gender = true;
 		this.interest = new ArrayList<String>();
-		this.history = "";
+		this.interest.add("Sex");
+		this.interest.add("Read");
+		this.interest.add("Sport");
+		this.history = "This is fucked history !";
 		this.dob = Calendar.getInstance().getTime();
 	}
 
