@@ -1,7 +1,9 @@
 package cloud.google.bigquery;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import cloud.google.util.Utility;
@@ -43,7 +45,7 @@ public class BQCoreFunction {
 
 		// Jobconfiguration need JobConfigurationQuery
 		JobConfigurationQuery queryConfig = new JobConfigurationQuery();
-		queryConfig.setQuery(querySql);		
+		queryConfig.setQuery(querySql);
 
 		config.setQuery(queryConfig);
 
@@ -161,13 +163,12 @@ public class BQCoreFunction {
 	 * 
 	 * @throws IOException
 	 * */
-	public static <T> void createTable(T obj, String tableName)
-			throws IOException {
+	public static <T> void createTable(Class<T> obj) throws IOException {
 		// Create table schema
 		TableSchema schema = new TableSchema();
 		List<TableFieldSchema> tableFieldSchema = new ArrayList<TableFieldSchema>();
 		TableFieldSchema schemaEntry;
-		for (java.lang.reflect.Field f : obj.getClass().getDeclaredFields()) {
+		for (java.lang.reflect.Field f : obj.getDeclaredFields()) {
 			schemaEntry = new TableFieldSchema();
 			String fType = f.getType().getName();
 			String fName = f.getName();
@@ -201,13 +202,75 @@ public class BQCoreFunction {
 
 		// Create table reference
 		TableReference tableRef = new TableReference();
-		tableRef.setDatasetId(BQConfig.PROJECT_ID);
-		tableRef.setTableId(tableName);
+		tableRef.setDatasetId(BQConfig.DATASET_ID);
+		tableRef.setTableId(obj.getSimpleName());
 		table.setTableReference(tableRef);
 
 		BQConfig.getBigquery().tables()
 				.insert(BQConfig.PROJECT_ID, BQConfig.DATASET_ID, table)
 				.execute();
+	}
+
+	public static <T> List<T> convertQueryResultToObject(Class<T> clazz,
+			GetQueryResultsResponse queryResultsResponse) {
+		try {
+			List<T> listResult = new ArrayList<T>();
+			List<TableFieldSchema> listTableFieldSchema = queryResultsResponse
+					.getSchema().getFields();
+
+			List<TableRow> tableRows = queryResultsResponse.getRows();
+			for (TableRow tableRow : tableRows) {
+				Object obj = Class.forName(clazz.getName()).newInstance();
+				int count = 0;
+				for (TableCell tableCell : tableRow.getF()) {
+
+					TableFieldSchema fieldSchema = listTableFieldSchema
+							.get(count);
+					Field objField = obj.getClass().getDeclaredField(
+							fieldSchema.getName());
+					objField.setAccessible(true);
+
+					if (Utility.isStringField(fieldSchema.getType())) {
+						try {
+							objField.set(obj, tableCell.getV().toString());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} else if (Utility.isBooleanField(fieldSchema.getType())) {
+						try {
+							objField.set(obj, Boolean
+									.parseBoolean((String) tableCell.getV()));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} else if (Utility.isFloatField(fieldSchema.getType())) {
+						try {
+							objField.set(obj,
+									Float.parseFloat((String) tableCell.getV()));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} else if (Utility.isDateTimeField(fieldSchema.getType())) {
+						try {
+							Calendar cal = Calendar.getInstance();
+							double d = Double.parseDouble((String) tableCell
+									.getV());
+							long l = (long) d * 1000;
+							cal.setTimeInMillis(l);
+							objField.set(obj, cal.getTime());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					count++;
+				}
+				listResult.add(clazz.cast(obj));
+			}
+			return listResult;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ArrayList<T>();
+		}
 	}
 
 }

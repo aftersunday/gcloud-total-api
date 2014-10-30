@@ -20,11 +20,12 @@ public class Foo {
 	@BigQuery_Id
 	private String id;
 	private String name;
-	@BigQuery_Remove
-	private String description;
-	private int age;
+	private String email;
+	private int randomInt;
+	private double randomDouble;
 	private boolean gender;
 	private ArrayList<String> interest;
+	@BigQuery_Remove
 	private String history;
 	private Date dob;
 
@@ -32,15 +33,39 @@ public class Foo {
 		super();
 		this.id = StringHelper.getId();
 		this.name = "";
-		this.description = "";
-		this.age = 1;
+		this.randomDouble = 2.0;
+		this.randomInt = 1;
 		this.gender = true;
 		this.interest = new ArrayList<String>();
 		this.interest.add("Sex");
-		this.interest.add("Read");
-		this.interest.add("Sport");
-		this.history = "This is fucked history !";
+		this.interest.add("Game");
+		this.history = "This is my history !";
 		this.dob = Calendar.getInstance().getTime();
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public int getRandomInt() {
+		return randomInt;
+	}
+
+	public double getRandomDouble() {
+		return randomDouble;
+	}
+
+	public void setEmail(String email) {
+		this.id += email;
+		this.email = email;
+	}
+
+	public void setRandomInt(int randomInt) {
+		this.randomInt = randomInt;
+	}
+
+	public void setRandomDouble(double randomDouble) {
+		this.randomDouble = randomDouble;
 	}
 
 	public String getHistory() {
@@ -65,22 +90,6 @@ public class Foo {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public int getAge() {
-		return age;
-	}
-
-	public void setAge(int age) {
-		this.age = age;
 	}
 
 	public boolean isGender() {

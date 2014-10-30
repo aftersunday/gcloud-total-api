@@ -19,10 +19,20 @@ public class StringHelper {
 		return cal.getTime();
 	}
 
-	public static String getId() {
+	public static String getId2() {
 		Date date = new Date();
 		String id = encode(date.getTime());
 		return id;
+	}
+
+	public static String getId() {
+		return String.valueOf(Calendar.getInstance().getTimeInMillis());
+	}
+
+	public static void main(String[] args) {
+		for (int i = 0; i < 100; i++) {
+			System.out.println(i + " - " + getId());
+		}
 	}
 
 	public static String encode(long num) {
