@@ -3,7 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>GoogleCloudTotalAPI</groupId>
 	<artifactId>GoogleCloudTotalAPI</artifactId>
+	<packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<jdk.version>1.7</jdk.version>
+	</properties>
 	<build>
 		<testSourceDirectory>src/test</testSourceDirectory>
 		<plugins>

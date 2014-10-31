@@ -12,7 +12,6 @@ import test.cloud.google.entity.Foo;
 import cloud.google.bigquery.BQConfig;
 import cloud.google.bigquery.BQCoreFunction;
 import cloud.google.bigquery.BQInsert;
-import cloud.google.bigquery.BQQuery;
 
 import com.google.api.services.bigquery.model.DatasetList.Datasets;
 import com.google.api.services.bigquery.model.TableList.Tables;
@@ -29,12 +28,7 @@ public class TestBigQuery {
 	static String key = "75c220c9fef5a0955a6563976fc9bf705f20d0f1-privatekey.p12";
 
 	public static void main(String[] args) throws IOException {
-		BQConfig config = new BQConfig(project, dataset, account, key);
-		BQQuery<Foo> bq = new BQQuery<Foo>(config);
-		System.out.println(bq.sqlQuery(Foo.class)
-				.queryString("SELECT COUNT(*) from [test_again.Foo]").result()
-				.getRows().get(0).getF().get(0).getV());
-		config = new BQConfig(project, "domain", account, key);
+
 	}
 
 	public static void testQueryString() {

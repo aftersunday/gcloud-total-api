@@ -275,7 +275,7 @@ public class BQCoreFunction {
 									.getV());
 							long l = (long) d * 1000;
 							cal.setTimeInMillis(l);
-							objField.set(obj, cal.getTime());
+							objField.set(obj, cal.getTime());							
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
