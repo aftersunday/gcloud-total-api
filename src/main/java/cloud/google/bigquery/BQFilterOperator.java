@@ -20,6 +20,17 @@ package cloud.google.bigquery;
  * @author xuanhung2401
  * 
  */
-public enum OrderDirection {
-	DESC, ASC;
+public enum BQFilterOperator {
+	EQUAL("="), NOT_EQUAL("!="), GREATER_THAN(">"), GREATER_THAN_OR_EQUAL(">="), LESS_THAN(
+			"<"), LESS_THAN_OR_EQUAL("<=");
+
+	private String symbol;
+
+	private BQFilterOperator(String s) {
+		symbol = s;
+	}
+
+	public String getSymbol() {
+		return symbol;
+	}
 }

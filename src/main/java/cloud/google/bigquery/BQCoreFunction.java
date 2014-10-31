@@ -29,6 +29,15 @@ import com.google.api.services.bigquery.model.TableSchema;
 
 public class BQCoreFunction {
 
+	private BQConfig config;
+
+	/**
+	 * @param config
+	 */
+	public BQCoreFunction(BQConfig config) {
+		this.config = config;
+	}
+
 	/**
 	 * Creates a Query Job for a particular query on a dataset
 	 * 
@@ -37,7 +46,7 @@ public class BQCoreFunction {
 	 * @return a reference to the inserted query job
 	 * @throws IOException
 	 */
-	public static JobReference createJob(String querySql) throws IOException {
+	public JobReference createJob(String querySql) throws IOException {
 		Job job = new Job();
 		// Job need jobconfiguration
 
@@ -52,9 +61,9 @@ public class BQCoreFunction {
 		job.setConfiguration(config);
 
 		// Insert job
-		Insert insert = BQConfig.getBigquery().jobs()
-				.insert(BQConfig.PROJECT_ID, job);
-		insert.setProjectId(BQConfig.PROJECT_ID);
+		Insert insert = this.config.getBigquery().jobs()
+				.insert(this.config.getPROJECT_ID(), job);
+		insert.setProjectId(this.config.getPROJECT_ID());
 
 		// After execute get JobReference
 		JobReference jobReference = insert.execute().getJobReference();
@@ -70,14 +79,14 @@ public class BQCoreFunction {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static Job checkQueryResults(String jobId) throws IOException,
+	public Job checkQueryResults(String jobId) throws IOException,
 			InterruptedException {
 		// Variables to keep track of total query time
 		long startTime = System.currentTimeMillis();
 		long elapsedTime;
 		while (true) {
-			Job pollJob = BQConfig.getBigquery().jobs()
-					.get(BQConfig.PROJECT_ID, jobId).execute();
+			Job pollJob = this.config.getBigquery().jobs()
+					.get(this.config.getPROJECT_ID(), jobId).execute();
 			elapsedTime = System.currentTimeMillis() - startTime;
 			System.out.format("Job status (%dms) %s: %s\n", elapsedTime, jobId,
 					pollJob.getStatus().getState());
@@ -99,16 +108,16 @@ public class BQCoreFunction {
 	 *            to the completed Job
 	 * @throws IOException
 	 */
-	public static GetQueryResultsResponse getQueryResults(String jobId)
+	public GetQueryResultsResponse getQueryResults(String jobId)
 			throws IOException {
-		return BQConfig.getBigquery().jobs()
-				.getQueryResults(BQConfig.PROJECT_ID, jobId).execute();
+		return this.config.getBigquery().jobs()
+				.getQueryResults(this.config.getPROJECT_ID(), jobId).execute();
 	}
 
 	/**
 	 * Just display query result
 	 * */
-	public static void displayQueryResult(
+	public void displayQueryResult(
 			GetQueryResultsResponse getQueryResultsResponse) {
 		List<TableRow> rows = getQueryResultsResponse.getRows();
 		System.out.print("\nQuery Results:\n------------\n");
@@ -125,10 +134,9 @@ public class BQCoreFunction {
 	 * 
 	 * @throws IOException
 	 */
-	public static List<Tables> getListTable(String datasetId)
-			throws IOException {
-		TableList tableList = BQConfig.getBigquery().tables()
-				.list(BQConfig.PROJECT_ID, datasetId).execute();
+	public List<Tables> getListTable(String datasetId) throws IOException {
+		TableList tableList = this.config.getBigquery().tables()
+				.list(this.config.getPROJECT_ID(), datasetId).execute();
 		return tableList.getTables();
 	}
 
@@ -137,9 +145,9 @@ public class BQCoreFunction {
 	 * 
 	 * @throws IOException
 	 */
-	public static List<Datasets> getListDatasets() throws IOException {
-		DatasetList datasetList = BQConfig.getBigquery().datasets()
-				.list(BQConfig.PROJECT_ID).execute();
+	public List<Datasets> getListDatasets() throws IOException {
+		DatasetList datasetList = this.config.getBigquery().datasets()
+				.list(this.config.getPROJECT_ID()).execute();
 		return datasetList.getDatasets();
 	}
 
@@ -148,22 +156,24 @@ public class BQCoreFunction {
 	 * 
 	 * @throws IOException
 	 * */
-	public static void createDataset() throws IOException {
+	public void createDataset() throws IOException {
 		Dataset dataset = new Dataset();
 		DatasetReference datasetRef = new DatasetReference();
-		datasetRef.setProjectId(BQConfig.PROJECT_ID);
-		datasetRef.setDatasetId(BQConfig.DATASET_ID);
+		datasetRef.setProjectId(this.config.getPROJECT_ID());
+		datasetRef.setDatasetId(this.config.getDATASET_ID());
 		dataset.setDatasetReference(datasetRef);
-		BQConfig.getBigquery().datasets().insert(BQConfig.PROJECT_ID, dataset)
-				.execute();
+		this.config.getBigquery().datasets()
+				.insert(this.config.getPROJECT_ID(), dataset).execute();
 	}
 
 	/**
 	 * Create table in a dataset based on Object type
 	 * 
+	 * @param <T>
+	 * 
 	 * @throws IOException
 	 * */
-	public static <T> void createTable(Class<T> obj) throws IOException {
+	public <T> void createTable(Class<T> obj) throws IOException {
 		// Create table schema
 		TableSchema schema = new TableSchema();
 		List<TableFieldSchema> tableFieldSchema = new ArrayList<TableFieldSchema>();
@@ -202,13 +212,15 @@ public class BQCoreFunction {
 
 		// Create table reference
 		TableReference tableRef = new TableReference();
-		tableRef.setDatasetId(BQConfig.DATASET_ID);
+		tableRef.setDatasetId(this.config.getDATASET_ID());
 		tableRef.setTableId(obj.getSimpleName());
 		table.setTableReference(tableRef);
 
-		BQConfig.getBigquery().tables()
-				.insert(BQConfig.PROJECT_ID, BQConfig.DATASET_ID, table)
-				.execute();
+		this.config
+				.getBigquery()
+				.tables()
+				.insert(this.config.getPROJECT_ID(),
+						this.config.getDATASET_ID(), table).execute();
 	}
 
 	public static <T> List<T> convertQueryResultToObject(Class<T> clazz,
@@ -229,10 +241,16 @@ public class BQCoreFunction {
 					Field objField = obj.getClass().getDeclaredField(
 							fieldSchema.getName());
 					objField.setAccessible(true);
-
 					if (Utility.isStringField(fieldSchema.getType())) {
 						try {
 							objField.set(obj, tableCell.getV().toString());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} else if (Utility.isIntegerField(fieldSchema.getType())) {
+						try {
+							objField.set(obj,
+									Integer.parseInt((String) tableCell.getV()));
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

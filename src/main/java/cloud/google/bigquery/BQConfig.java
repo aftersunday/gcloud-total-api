@@ -16,41 +16,78 @@ import com.google.api.services.bigquery.BigqueryScopes;
 
 public class BQConfig {
 
-	public static final Collection<String> SCOPE = Arrays
+	private static final Collection<String> SCOPE = Arrays
 			.asList(BigqueryScopes.BIGQUERY);
-	public static final HttpTransport TRANSPORT = new NetHttpTransport();
-	public static final JsonFactory JSON_FACTORY = new JacksonFactory();
+	private static final HttpTransport TRANSPORT = new NetHttpTransport();
+	private static final JsonFactory JSON_FACTORY = new JacksonFactory();
+	private static String DATASET_ID = "test_again";
+	private static String PROJECT_ID = "build-again";
 
-	public static final String DATASET_ID = "test_again";
-	public static final String PROJECT_ID = "build-again";
-
-	public static final String SERVICE_ACCOUNT_ID = "120936437457-ivb1d5qf7tisnp84ieue6g87jpmvqh92@developer.gserviceaccount.com";
-	public static final String PRIVATE_KEY = "75c220c9fef5a0955a6563976fc9bf705f20d0f1-privatekey.p12";
+	private static String SERVICE_ACCOUNT_ID = "120936437457-ivb1d5qf7tisnp84ieue6g87jpmvqh92@developer.gserviceaccount.com";
+	private static String PRIVATE_KEY = "75c220c9fef5a0955a6563976fc9bf705f20d0f1-privatekey.p12";
 
 	private static Bigquery bigquery;
+	private static GoogleCredential credential;
 
-	public static Bigquery getBigquery() {
+	public Bigquery getBigquery() {
 		return bigquery;
 	}
 
-	static {
-		GoogleCredential credential;
-		try {
-			credential = new GoogleCredential.Builder()
-					.setTransport(BQConfig.TRANSPORT)
-					.setJsonFactory(BQConfig.JSON_FACTORY)
-					.setServiceAccountId(BQConfig.SERVICE_ACCOUNT_ID)
-					.setServiceAccountScopes(BQConfig.SCOPE)
-					.setServiceAccountPrivateKeyFromP12File(
-							new File(BQConfig.PRIVATE_KEY)).build();
-			bigquery = new Bigquery.Builder(BQConfig.TRANSPORT,
-					BQConfig.JSON_FACTORY, credential)
-					.setApplicationName(BQConfig.PROJECT_ID)
-					.setHttpRequestInitializer(credential).build();
-		} catch (GeneralSecurityException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+	public String getDATASET_ID() {
+		return DATASET_ID;
+	}
+
+	public String getPROJECT_ID() {
+		return PROJECT_ID;
+	}
+
+	public String getSERVICE_ACCOUNT_ID() {
+		return SERVICE_ACCOUNT_ID;
+	}
+
+	public String getPRIVATE_KEY() {
+		return PRIVATE_KEY;
+	}
+
+	public void setDATASET_ID(String dATASET_ID) {
+		DATASET_ID = dATASET_ID;
+	}
+
+	public void setPROJECT_ID(String pROJECT_ID) {
+		PROJECT_ID = pROJECT_ID;
+	}
+
+	public void setSERVICE_ACCOUNT_ID(String sERVICE_ACCOUNT_ID) {
+		SERVICE_ACCOUNT_ID = sERVICE_ACCOUNT_ID;
+	}
+
+	public void setPRIVATE_KEY(String pRIVATE_KEY) {
+		PRIVATE_KEY = pRIVATE_KEY;
+	}
+
+	public BQConfig(String projectId, String datasetId,
+			String serviceAccountId, String p12KeyLocation) {
+		if (!projectId.equals(PROJECT_ID) || !datasetId.equals(DATASET_ID)
+				|| !serviceAccountId.equals(SERVICE_ACCOUNT_ID)
+				|| !p12KeyLocation.equals(PRIVATE_KEY) || credential == null) {
+			System.out.println("Init credential...");
+			try {
+				credential = new GoogleCredential.Builder()
+						.setTransport(BQConfig.TRANSPORT)
+						.setJsonFactory(BQConfig.JSON_FACTORY)
+						.setServiceAccountId(SERVICE_ACCOUNT_ID)
+						.setServiceAccountScopes(BQConfig.SCOPE)
+						.setServiceAccountPrivateKeyFromP12File(
+								new File(PRIVATE_KEY)).build();
+				bigquery = new Bigquery.Builder(BQConfig.TRANSPORT,
+						BQConfig.JSON_FACTORY, credential)
+						.setApplicationName(PROJECT_ID)
+						.setHttpRequestInitializer(credential).build();
+			} catch (GeneralSecurityException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

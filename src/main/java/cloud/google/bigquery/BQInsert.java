@@ -20,32 +20,23 @@ import com.google.api.services.bigquery.model.TableRow;
 
 public class BQInsert {
 
+	protected BQConfig config;
+
+	public BQInsert(BQConfig config) {
+		this.config = config;
+	}
+
 	private static final Logger log = Logger
 			.getLogger(BQInsert.class.getName());
 
-	public static <T> boolean insert(T obj) {
+	public <T> boolean insert(T obj) {
 		Rows rows = convertObjectToTableRows(obj);
 		List<Rows> rowList = new ArrayList<Rows>();
 		rowList.add(rows);
-
-		TableDataInsertAllRequest content = new TableDataInsertAllRequest()
-				.setRows(rowList);
-		try {
-			TableDataInsertAllResponse response = BQConfig
-					.getBigquery()
-					.tabledata()
-					.insertAll(BQConfig.PROJECT_ID, BQConfig.DATASET_ID,
-							obj.getClass().getSimpleName(), content).execute();
-			log.info(response.toPrettyString());
-			return !(response.getInsertErrors() != null && response
-					.getInsertErrors().size() > 0);
-		} catch (IOException e) {
-			log.severe(e.getMessage());
-			return false;
-		}
+		return doInsert(rowList, obj.getClass());
 	}
 
-	public static <T> boolean insert(T... objs) {
+	public <T> boolean insert(T... objs) {
 		List<Rows> rowList = new ArrayList<Rows>();
 		Class<?> type = null;
 		for (T object : objs) {
@@ -53,25 +44,10 @@ public class BQInsert {
 			Rows rows = convertObjectToTableRows(object);
 			rowList.add(rows);
 		}
-
-		TableDataInsertAllRequest content = new TableDataInsertAllRequest()
-				.setRows(rowList);
-		try {
-			TableDataInsertAllResponse response = BQConfig
-					.getBigquery()
-					.tabledata()
-					.insertAll(BQConfig.PROJECT_ID, BQConfig.DATASET_ID,
-							type.getSimpleName(), content).execute();
-			log.info(response.toPrettyString());
-			return !(response.getInsertErrors() != null && response
-					.getInsertErrors().size() > 0);
-		} catch (IOException e) {
-			log.severe(e.getMessage());
-			return false;
-		}
+		return doInsert(rowList, type);
 	}
 
-	public static <T> boolean insert(List<T> objs) {
+	public <T> boolean insert(List<T> objs) {
 		List<Rows> rowList = new ArrayList<Rows>();
 		Class<?> type = null;
 		for (T object : objs) {
@@ -79,15 +55,19 @@ public class BQInsert {
 			Rows rows = convertObjectToTableRows(object);
 			rowList.add(rows);
 		}
+		return doInsert(rowList, type);
+	}
 
+	private boolean doInsert(List<Rows> rowList, Class<?> type) {
 		TableDataInsertAllRequest content = new TableDataInsertAllRequest()
 				.setRows(rowList);
 		try {
-			TableDataInsertAllResponse response = BQConfig
+			TableDataInsertAllResponse response = this.config
 					.getBigquery()
 					.tabledata()
-					.insertAll(BQConfig.PROJECT_ID, BQConfig.DATASET_ID,
-							type.getSimpleName(), content).execute();
+					.insertAll(this.config.getPROJECT_ID(),
+							this.config.getDATASET_ID(), type.getSimpleName(),
+							content).execute();
 			log.info(response.toPrettyString());
 			return !(response.getInsertErrors() != null && response
 					.getInsertErrors().size() > 0);
@@ -97,7 +77,7 @@ public class BQInsert {
 		}
 	}
 
-	private static <T> Rows convertObjectToTableRows(T obj) {
+	private <T> Rows convertObjectToTableRows(T obj) {
 		TableDataInsertAllRequest.Rows rows = new TableDataInsertAllRequest.Rows();
 		TableRow row = new TableRow();
 		String objectId = "";
