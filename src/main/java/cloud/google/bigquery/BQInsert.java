@@ -22,6 +22,16 @@ public class BQInsert {
 
 	protected BQConfig config;
 
+	protected String tableName;
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
 	public BQInsert(BQConfig config) {
 		this.config = config;
 	}
@@ -61,13 +71,17 @@ public class BQInsert {
 	private boolean doInsert(List<Rows> rowList, Class<?> type) {
 		TableDataInsertAllRequest content = new TableDataInsertAllRequest()
 				.setRows(rowList);
+		String table = tableName;
+		if (table == null || table.isEmpty()) {
+			table = type.getSimpleName();
+		}
 		try {
 			TableDataInsertAllResponse response = this.config
 					.getBigquery()
 					.tabledata()
 					.insertAll(this.config.getPROJECT_ID(),
-							this.config.getDATASET_ID(), type.getSimpleName(),
-							content).execute();
+							this.config.getDATASET_ID(), table, content) 
+					.execute();
 			log.info(response.toPrettyString());
 			return !(response.getInsertErrors() != null && response
 					.getInsertErrors().size() > 0);

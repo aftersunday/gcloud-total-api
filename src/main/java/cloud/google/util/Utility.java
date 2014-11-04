@@ -67,7 +67,7 @@ public class Utility {
 	}
 
 	public static boolean isDoubleField(String typeName) {
-		if (typeName.equals("DOUBLE")
+		if (typeName.equals("DOUBLE") || typeName.equals("Double")
 				|| typeName.equals("class java.lang.Double")
 				|| typeName.equals("double")
 				|| typeName.equals("java.lang.Double")) {

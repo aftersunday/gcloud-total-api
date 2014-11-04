@@ -231,64 +231,85 @@ public class BQCoreFunction {
 					.getSchema().getFields();
 
 			List<TableRow> tableRows = queryResultsResponse.getRows();
-			for (TableRow tableRow : tableRows) {
-				Object obj = Class.forName(clazz.getName()).newInstance();
-				int count = 0;
-				for (TableCell tableCell : tableRow.getF()) {
+			if (tableRows != null && tableRows.size() > 0) {
+				for (TableRow tableRow : tableRows) {
+					Object obj = Class.forName(clazz.getName()).newInstance();
+					int count = 0;
+					for (TableCell tableCell : tableRow.getF()) {
 
-					TableFieldSchema fieldSchema = listTableFieldSchema
-							.get(count);
-					Field objField = obj.getClass().getDeclaredField(
-							fieldSchema.getName());
-					objField.setAccessible(true);
-					if (Utility.isStringField(fieldSchema.getType())) {
-						try {
-							objField.set(obj, tableCell.getV().toString());
-						} catch (Exception e) {
-							e.printStackTrace();
+						TableFieldSchema fieldSchema = listTableFieldSchema
+								.get(count);
+						Field objField = obj.getClass().getDeclaredField(
+								fieldSchema.getName());
+						objField.setAccessible(true);
+						if (Utility.isStringField(fieldSchema.getType())) {
+							try {
+								objField.set(obj, tableCell.getV().toString());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						} else if (Utility
+								.isIntegerField(fieldSchema.getType())) {
+							try {
+								objField.set(obj, Integer
+										.parseInt((String) tableCell.getV()));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						} else if (Utility
+								.isBooleanField(fieldSchema.getType())) {
+							try {
+								objField.set(obj,
+										Boolean.parseBoolean((String) tableCell
+												.getV()));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						} else if (Utility.isDoubleField(fieldSchema.getType())) {
+							try {
+								objField.set(obj, Double
+										.parseDouble((String) tableCell.getV()));
+							} catch (Exception e) {
+								System.out.println(e.getMessage());
+							}
+						} else if (Utility.isFloatField(fieldSchema.getType())) {
+							try {
+								if (Utility.isDoubleField(objField.getType()
+										.getSimpleName())) {
+									objField.set(obj, Double
+											.parseDouble((String) tableCell
+													.getV()));
+								} else {
+									objField.set(obj, Float
+											.parseFloat((String) tableCell
+													.getV()));
+								}
+							} catch (Exception e) {
+								System.out.println(e.getMessage());
+							}
+						} else if (Utility.isDateTimeField(fieldSchema
+								.getType())) {
+							try {
+								Calendar cal = Calendar.getInstance();
+								double d = Double
+										.parseDouble((String) tableCell.getV());
+								long l = (long) d * 1000;
+								cal.setTimeInMillis(l);
+								objField.set(obj, cal.getTime());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 						}
-					} else if (Utility.isIntegerField(fieldSchema.getType())) {
-						try {
-							objField.set(obj,
-									Integer.parseInt((String) tableCell.getV()));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} else if (Utility.isBooleanField(fieldSchema.getType())) {
-						try {
-							objField.set(obj, Boolean
-									.parseBoolean((String) tableCell.getV()));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} else if (Utility.isFloatField(fieldSchema.getType())) {
-						try {
-							objField.set(obj,
-									Float.parseFloat((String) tableCell.getV()));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} else if (Utility.isDateTimeField(fieldSchema.getType())) {
-						try {
-							Calendar cal = Calendar.getInstance();
-							double d = Double.parseDouble((String) tableCell
-									.getV());
-							long l = (long) d * 1000;
-							cal.setTimeInMillis(l);
-							objField.set(obj, cal.getTime());							
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+						count++;
 					}
-					count++;
+					listResult.add(clazz.cast(obj));
 				}
-				listResult.add(clazz.cast(obj));
 			}
+
 			return listResult;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ArrayList<T>();
 		}
 	}
-
 }

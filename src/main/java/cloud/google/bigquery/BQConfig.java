@@ -65,11 +65,36 @@ public class BQConfig {
 		PRIVATE_KEY = pRIVATE_KEY;
 	}
 
+	static {
+		System.out.println("1st time credential...");
+		try {
+			credential = new GoogleCredential.Builder()
+					.setTransport(BQConfig.TRANSPORT)
+					.setJsonFactory(BQConfig.JSON_FACTORY)
+					.setServiceAccountId(SERVICE_ACCOUNT_ID)
+					.setServiceAccountScopes(BQConfig.SCOPE)
+					.setServiceAccountPrivateKeyFromP12File(
+							new File(PRIVATE_KEY)).build();
+			bigquery = new Bigquery.Builder(BQConfig.TRANSPORT,
+					BQConfig.JSON_FACTORY, credential)
+					.setApplicationName(PROJECT_ID)
+					.setHttpRequestInitializer(credential).build();
+		} catch (GeneralSecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public BQConfig(String projectId, String datasetId,
 			String serviceAccountId, String p12KeyLocation) {
 		if (!projectId.equals(PROJECT_ID) || !datasetId.equals(DATASET_ID)
 				|| !serviceAccountId.equals(SERVICE_ACCOUNT_ID)
 				|| !p12KeyLocation.equals(PRIVATE_KEY) || credential == null) {
+			PROJECT_ID = projectId;
+			DATASET_ID = datasetId;
+			SERVICE_ACCOUNT_ID = serviceAccountId;
+			PRIVATE_KEY = p12KeyLocation;
 			System.out.println("Init credential...");
 			try {
 				credential = new GoogleCredential.Builder()
@@ -88,6 +113,8 @@ public class BQConfig {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		} else {
+			System.out.println("Already credential !");
 		}
 	}
 }

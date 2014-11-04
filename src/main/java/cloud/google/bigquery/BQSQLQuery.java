@@ -11,8 +11,9 @@ public class BQSQLQuery<T> extends BQQuery<T> {
 	/**
 	 * @param config
 	 */
-	public BQSQLQuery(BQConfig config) {
+	public BQSQLQuery(BQConfig config, Class<T> clazz) {
 		super(config);
+		this.clazz = clazz;
 	}
 
 	private static final Logger log = Logger.getLogger(BQSQLQuery.class

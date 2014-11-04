@@ -11,11 +11,14 @@ import com.google.api.services.bigquery.model.JobReference;
 
 public class BQObjectQuery<T> extends BQQuery<T> {
 
+	private String tableName;
+
 	/**
 	 * @param config
 	 */
-	public BQObjectQuery(BQConfig config) {
+	public BQObjectQuery(BQConfig config, Class<T> clazz) {
 		super(config);
+		this.clazz = clazz;
 	}
 
 	private static final Logger log = Logger.getLogger(BQObjectQuery.class
@@ -27,6 +30,11 @@ public class BQObjectQuery<T> extends BQQuery<T> {
 	private List<String> filter;
 	private List<String> order;
 	private Class<T> clazz;
+
+	public BQObjectQuery<T> table(String tableName) {
+		this.tableName = tableName;
+		return this;
+	}
 
 	public BQObjectQuery<T> offset(int offset) {
 		this.offset = offset;
@@ -95,6 +103,7 @@ public class BQObjectQuery<T> extends BQQuery<T> {
 	}
 
 	public List<T> list() {
+		List<T> list = new ArrayList<T>();
 		StringBuilder strQuery = new StringBuilder();
 		strQuery.append("SELECT");
 		strQuery.append(" ");
@@ -109,14 +118,23 @@ public class BQObjectQuery<T> extends BQQuery<T> {
 			strQuery.append("*");
 		}
 		strQuery.append(" ");
-		if (this.clazz != null) {
-			strQuery.append("FROM");
+		strQuery.append("FROM");
+		strQuery.append(" ");
+		strQuery.append(this.config.getDATASET_ID());
+		strQuery.append(".");
+		if (tableName != null && tableName.length() > 0) {
+			strQuery.append(tableName);
 			strQuery.append(" ");
-			strQuery.append(this.config.getDATASET_ID());
-			strQuery.append(".");
-			strQuery.append(this.clazz.getSimpleName());
-			strQuery.append(" ");
+		} else {
+			if (this.clazz != null) {
+				strQuery.append(this.clazz.getSimpleName());
+				strQuery.append(" ");
+			} else {
+				log.severe("Need object type to query...");
+				return list;
+			}
 		}
+
 		if (filter != null && filter.size() > 0) {
 			strQuery.append("WHERE");
 			strQuery.append(" ");
@@ -137,9 +155,9 @@ public class BQObjectQuery<T> extends BQQuery<T> {
 				strQuery.append(this.order.get(i));
 				if (i + 1 < this.order.size()) {
 					strQuery.append(",");
-					strQuery.append(" ");
 				}
 			}
+			strQuery.append(" ");
 		}
 		if (this.offset != -1) {
 			strQuery.append("OFFSET");
@@ -153,13 +171,14 @@ public class BQObjectQuery<T> extends BQQuery<T> {
 			strQuery.append(this.limit);
 		}
 		try {
+			System.out.println(strQuery);
 			BQCoreFunction coreFunction = new BQCoreFunction(this.config);
 			JobReference jobReference = coreFunction.createJob(strQuery
 					.toString());
 			coreFunction.checkQueryResults(jobReference.getJobId());
 			GetQueryResultsResponse getQueryResultsResponse = coreFunction
 					.getQueryResults(jobReference.getJobId());
-			List<T> list = new ArrayList<T>();
+
 			list = BQCoreFunction.convertQueryResultToObject(this.clazz,
 					getQueryResultsResponse);
 			return list;

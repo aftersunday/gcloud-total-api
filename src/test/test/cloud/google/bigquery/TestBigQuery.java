@@ -12,6 +12,7 @@ import test.cloud.google.entity.Foo;
 import cloud.google.bigquery.BQConfig;
 import cloud.google.bigquery.BQCoreFunction;
 import cloud.google.bigquery.BQInsert;
+import cloud.google.bigquery.BQQuery;
 
 import com.google.api.services.bigquery.model.DatasetList.Datasets;
 import com.google.api.services.bigquery.model.TableList.Tables;
@@ -28,7 +29,12 @@ public class TestBigQuery {
 	static String key = "75c220c9fef5a0955a6563976fc9bf705f20d0f1-privatekey.p12";
 
 	public static void main(String[] args) throws IOException {
-
+		BQConfig config = new BQConfig(project, dataset, account, key);
+		BQQuery<Foo> bq = new BQQuery<Foo>(config);
+		List<Foo> list = bq.sqlQuery(Foo.class).queryString("SELECT * FROM [test_again.Foo] WHERE randomInt = 24").list(); 
+		for (Foo foo : list) {
+			System.out.println(foo.getName() + " - " + foo.getRandomInt() + " - " + foo.getEmail());
+		}
 	}
 
 	public static void testQueryString() {
