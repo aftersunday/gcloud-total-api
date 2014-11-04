@@ -7,11 +7,9 @@
 	<version>1.0.0</version>
 	<url>http://maven.apache.org</url>
 	<repositories>
-		<!--other repositories if any -->
 		<repository>
 			<id>cloud.google.total.api</id>
-			<name>gcloud-total-api</name>
-			<url>file:${project.basedir}/repo</url>
+			<url>https://github.com/aftersunday/gcloud-total-api/raw/master/repo/</url>
 		</repository>
 	</repositories>
 
