@@ -4,3 +4,6 @@ src
 target
 gcloud-total-api-1.0.0.jar
 pom.xml
+.settings
+.classpath
+.project
