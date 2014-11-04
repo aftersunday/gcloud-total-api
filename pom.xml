@@ -5,7 +5,8 @@
 	<artifactId>gcloud-total-api</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
-	<url>http://maven.apache.org</url>	
+	<url>http://maven.apache.org</url>
+	
 
 	<properties>
 		<jdk.version>1.7</jdk.version>
