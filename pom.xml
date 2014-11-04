@@ -6,6 +6,14 @@
 	<packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<url>http://maven.apache.org</url>
+	<repositories>
+		<!--other repositories if any -->
+		<repository>
+			<id>cloud.google.total.api</id>
+			<name>gcloud-total-api</name>
+			<url>file:${project.basedir}/repo</url>
+		</repository>
+	</repositories>
 
 	<properties>
 		<jdk.version>1.7</jdk.version>
